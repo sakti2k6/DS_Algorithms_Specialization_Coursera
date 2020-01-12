@@ -1,0 +1,689 @@
+String is: 5-8+7*4-8+9
+left: 5 right: 8+7*4-8+9
+String is: 5
+Result: 5
+String is: 8+7*4-8+9
+left: 8 right: 7*4-8+9
+String is: 8
+Result: 8
+String is: 7*4-8+9
+left: 7 right: 4-8+9
+String is: 7
+Result: 7
+String is: 4-8+9
+left: 4 right: 8+9
+String is: 4
+Result: 4
+String is: 8+9
+left: 8 right: 9
+String is: 8
+Result: 8
+String is: 9
+Result: 9
+Vector: 17,17,
+Result: 17,17
+left: 4-8 right: 9
+String is: 4-8
+left: 4 right: 8
+String is: 4
+Result: 4
+String is: 8
+Result: 8
+Vector: -4,-4,
+Result: -4,-4
+String is: 9
+Result: 9
+Vector: -13,-13,5,5,
+Result: -13,5
+left: 7*4 right: 8+9
+String is: 7*4
+left: 7 right: 4
+String is: 7
+Result: 7
+String is: 4
+Result: 4
+Vector: 28,28,
+Result: 28,28
+String is: 8+9
+left: 8 right: 9
+String is: 8
+Result: 8
+String is: 9
+Result: 9
+Vector: 17,17,
+Result: 17,17
+left: 7*4-8 right: 9
+String is: 7*4-8
+left: 7 right: 4-8
+String is: 7
+Result: 7
+String is: 4-8
+left: 4 right: 8
+String is: 4
+Result: 4
+String is: 8
+Result: 8
+Vector: -4,-4,
+Result: -4,-4
+left: 7*4 right: 8
+String is: 7*4
+left: 7 right: 4
+String is: 7
+Result: 7
+String is: 4
+Result: 4
+Vector: 28,28,
+Result: 28,28
+String is: 8
+Result: 8
+Vector: -28,-28,20,20,
+Result: -28,20
+String is: 9
+Result: 9
+Vector: -91,35,11,11,-19,29,
+Result: -91,35
+left: 8+7 right: 4-8+9
+String is: 8+7
+left: 8 right: 7
+String is: 8
+Result: 8
+String is: 7
+Result: 7
+Vector: 15,15,
+Result: 15,15
+String is: 4-8+9
+left: 4 right: 8+9
+String is: 4
+Result: 4
+String is: 8+9
+left: 8 right: 9
+String is: 8
+Result: 8
+String is: 9
+Result: 9
+Vector: 17,17,
+Result: 17,17
+left: 4-8 right: 9
+String is: 4-8
+left: 4 right: 8
+String is: 4
+Result: 4
+String is: 8
+Result: 8
+Vector: -4,-4,
+Result: -4,-4
+String is: 9
+Result: 9
+Vector: -13,-13,5,5,
+Result: -13,5
+left: 8+7*4 right: 8+9
+String is: 8+7*4
+left: 8 right: 7*4
+String is: 8
+Result: 8
+String is: 7*4
+left: 7 right: 4
+String is: 7
+Result: 7
+String is: 4
+Result: 4
+Vector: 28,28,
+Result: 28,28
+left: 8+7 right: 4
+String is: 8+7
+left: 8 right: 7
+String is: 8
+Result: 8
+String is: 7
+Result: 7
+Vector: 15,15,
+Result: 15,15
+String is: 4
+Result: 4
+Vector: 36,36,60,60,
+Result: 36,60
+String is: 8+9
+left: 8 right: 9
+String is: 8
+Result: 8
+String is: 9
+Result: 9
+Vector: 17,17,
+Result: 17,17
+left: 8+7*4-8 right: 9
+String is: 8+7*4-8
+left: 8 right: 7*4-8
+String is: 8
+Result: 8
+String is: 7*4-8
+left: 7 right: 4-8
+String is: 7
+Result: 7
+String is: 4-8
+left: 4 right: 8
+String is: 4
+Result: 4
+String is: 8
+Result: 8
+Vector: -4,-4,
+Result: -4,-4
+left: 7*4 right: 8
+String is: 7*4
+left: 7 right: 4
+String is: 7
+Result: 7
+String is: 4
+Result: 4
+Vector: 28,28,
+Result: 28,28
+String is: 8
+Result: 8
+Vector: -28,-28,20,20,
+Result: -28,20
+left: 8+7 right: 4-8
+String is: 8+7
+left: 8 right: 7
+String is: 8
+Result: 8
+String is: 7
+Result: 7
+Vector: 15,15,
+Result: 15,15
+String is: 4-8
+left: 4 right: 8
+String is: 4
+Result: 4
+String is: 8
+Result: 8
+Vector: -4,-4,
+Result: -4,-4
+left: 8+7*4 right: 8
+String is: 8+7*4
+left: 8 right: 7*4
+String is: 8
+Result: 8
+String is: 7*4
+left: 7 right: 4
+String is: 7
+Result: 7
+String is: 4
+Result: 4
+Vector: 28,28,
+Result: 28,28
+left: 8+7 right: 4
+String is: 8+7
+left: 8 right: 7
+String is: 8
+Result: 8
+String is: 7
+Result: 7
+Vector: 15,15,
+Result: 15,15
+String is: 4
+Result: 4
+Vector: 36,36,60,60,
+Result: 36,60
+String is: 8
+Result: 8
+Vector: -20,28,-60,-60,28,52,
+Result: -60,52
+String is: 9
+Result: 9
+Vector: -83,43,-195,75,19,43,-51,61,
+Result: -195,75
+left: 5-8 right: 7*4-8+9
+String is: 5-8
+left: 5 right: 8
+String is: 5
+Result: 5
+String is: 8
+Result: 8
+Vector: -3,-3,
+Result: -3,-3
+String is: 7*4-8+9
+left: 7 right: 4-8+9
+String is: 7
+Result: 7
+String is: 4-8+9
+left: 4 right: 8+9
+String is: 4
+Result: 4
+String is: 8+9
+left: 8 right: 9
+String is: 8
+Result: 8
+String is: 9
+Result: 9
+Vector: 17,17,
+Result: 17,17
+left: 4-8 right: 9
+String is: 4-8
+left: 4 right: 8
+String is: 4
+Result: 4
+String is: 8
+Result: 8
+Vector: -4,-4,
+Result: -4,-4
+String is: 9
+Result: 9
+Vector: -13,-13,5,5,
+Result: -13,5
+left: 7*4 right: 8+9
+String is: 7*4
+left: 7 right: 4
+String is: 7
+Result: 7
+String is: 4
+Result: 4
+Vector: 28,28,
+Result: 28,28
+String is: 8+9
+left: 8 right: 9
+String is: 8
+Result: 8
+String is: 9
+Result: 9
+Vector: 17,17,
+Result: 17,17
+left: 7*4-8 right: 9
+String is: 7*4-8
+left: 7 right: 4-8
+String is: 7
+Result: 7
+String is: 4-8
+left: 4 right: 8
+String is: 4
+Result: 4
+String is: 8
+Result: 8
+Vector: -4,-4,
+Result: -4,-4
+left: 7*4 right: 8
+String is: 7*4
+left: 7 right: 4
+String is: 7
+Result: 7
+String is: 4
+Result: 4
+Vector: 28,28,
+Result: 28,28
+String is: 8
+Result: 8
+Vector: -28,-28,20,20,
+Result: -28,20
+String is: 9
+Result: 9
+Vector: -91,35,11,11,-19,29,
+Result: -91,35
+left: 5-8+7 right: 4-8+9
+String is: 5-8+7
+left: 5 right: 8+7
+String is: 5
+Result: 5
+String is: 8+7
+left: 8 right: 7
+String is: 8
+Result: 8
+String is: 7
+Result: 7
+Vector: 15,15,
+Result: 15,15
+left: 5-8 right: 7
+String is: 5-8
+left: 5 right: 8
+String is: 5
+Result: 5
+String is: 8
+Result: 8
+Vector: -3,-3,
+Result: -3,-3
+String is: 7
+Result: 7
+Vector: -10,-10,4,4,
+Result: -10,4
+String is: 4-8+9
+left: 4 right: 8+9
+String is: 4
+Result: 4
+String is: 8+9
+left: 8 right: 9
+String is: 8
+Result: 8
+String is: 9
+Result: 9
+Vector: 17,17,
+Result: 17,17
+left: 4-8 right: 9
+String is: 4-8
+left: 4 right: 8
+String is: 4
+Result: 4
+String is: 8
+Result: 8
+Vector: -4,-4,
+Result: -4,-4
+String is: 9
+Result: 9
+Vector: -13,-13,5,5,
+Result: -13,5
+left: 5-8+7*4 right: 8+9
+String is: 5-8+7*4
+left: 5 right: 8+7*4
+String is: 5
+Result: 5
+String is: 8+7*4
+left: 8 right: 7*4
+String is: 8
+Result: 8
+String is: 7*4
+left: 7 right: 4
+String is: 7
+Result: 7
+String is: 4
+Result: 4
+Vector: 28,28,
+Result: 28,28
+left: 8+7 right: 4
+String is: 8+7
+left: 8 right: 7
+String is: 8
+Result: 8
+String is: 7
+Result: 7
+Vector: 15,15,
+Result: 15,15
+String is: 4
+Result: 4
+Vector: 36,36,60,60,
+Result: 36,60
+left: 5-8 right: 7*4
+String is: 5-8
+left: 5 right: 8
+String is: 5
+Result: 5
+String is: 8
+Result: 8
+Vector: -3,-3,
+Result: -3,-3
+String is: 7*4
+left: 7 right: 4
+String is: 7
+Result: 7
+String is: 4
+Result: 4
+Vector: 28,28,
+Result: 28,28
+left: 5-8+7 right: 4
+String is: 5-8+7
+left: 5 right: 8+7
+String is: 5
+Result: 5
+String is: 8+7
+left: 8 right: 7
+String is: 8
+Result: 8
+String is: 7
+Result: 7
+Vector: 15,15,
+Result: 15,15
+left: 5-8 right: 7
+String is: 5-8
+left: 5 right: 8
+String is: 5
+Result: 5
+String is: 8
+Result: 8
+Vector: -3,-3,
+Result: -3,-3
+String is: 7
+Result: 7
+Vector: -10,-10,4,4,
+Result: -10,4
+String is: 4
+Result: 4
+Vector: -55,-31,25,25,-40,16,
+Result: -55,25
+String is: 8+9
+left: 8 right: 9
+String is: 8
+Result: 8
+String is: 9
+Result: 9
+Vector: 17,17,
+Result: 17,17
+left: 5-8+7*4-8 right: 9
+String is: 5-8+7*4-8
+left: 5 right: 8+7*4-8
+String is: 5
+Result: 5
+String is: 8+7*4-8
+left: 8 right: 7*4-8
+String is: 8
+Result: 8
+String is: 7*4-8
+left: 7 right: 4-8
+String is: 7
+Result: 7
+String is: 4-8
+left: 4 right: 8
+String is: 4
+Result: 4
+String is: 8
+Result: 8
+Vector: -4,-4,
+Result: -4,-4
+left: 7*4 right: 8
+String is: 7*4
+left: 7 right: 4
+String is: 7
+Result: 7
+String is: 4
+Result: 4
+Vector: 28,28,
+Result: 28,28
+String is: 8
+Result: 8
+Vector: -28,-28,20,20,
+Result: -28,20
+left: 8+7 right: 4-8
+String is: 8+7
+left: 8 right: 7
+String is: 8
+Result: 8
+String is: 7
+Result: 7
+Vector: 15,15,
+Result: 15,15
+String is: 4-8
+left: 4 right: 8
+String is: 4
+Result: 4
+String is: 8
+Result: 8
+Vector: -4,-4,
+Result: -4,-4
+left: 8+7*4 right: 8
+String is: 8+7*4
+left: 8 right: 7*4
+String is: 8
+Result: 8
+String is: 7*4
+left: 7 right: 4
+String is: 7
+Result: 7
+String is: 4
+Result: 4
+Vector: 28,28,
+Result: 28,28
+left: 8+7 right: 4
+String is: 8+7
+left: 8 right: 7
+String is: 8
+Result: 8
+String is: 7
+Result: 7
+Vector: 15,15,
+Result: 15,15
+String is: 4
+Result: 4
+Vector: 36,36,60,60,
+Result: 36,60
+String is: 8
+Result: 8
+Vector: -20,28,-60,-60,28,52,
+Result: -60,52
+left: 5-8 right: 7*4-8
+String is: 5-8
+left: 5 right: 8
+String is: 5
+Result: 5
+String is: 8
+Result: 8
+Vector: -3,-3,
+Result: -3,-3
+String is: 7*4-8
+left: 7 right: 4-8
+String is: 7
+Result: 7
+String is: 4-8
+left: 4 right: 8
+String is: 4
+Result: 4
+String is: 8
+Result: 8
+Vector: -4,-4,
+Result: -4,-4
+left: 7*4 right: 8
+String is: 7*4
+left: 7 right: 4
+String is: 7
+Result: 7
+String is: 4
+Result: 4
+Vector: 28,28,
+Result: 28,28
+String is: 8
+Result: 8
+Vector: -28,-28,20,20,
+Result: -28,20
+left: 5-8+7 right: 4-8
+String is: 5-8+7
+left: 5 right: 8+7
+String is: 5
+Result: 5
+String is: 8+7
+left: 8 right: 7
+String is: 8
+Result: 8
+String is: 7
+Result: 7
+Vector: 15,15,
+Result: 15,15
+left: 5-8 right: 7
+String is: 5-8
+left: 5 right: 8
+String is: 5
+Result: 5
+String is: 8
+Result: 8
+Vector: -3,-3,
+Result: -3,-3
+String is: 7
+Result: 7
+Vector: -10,-10,4,4,
+Result: -10,4
+String is: 4-8
+left: 4 right: 8
+String is: 4
+Result: 4
+String is: 8
+Result: 8
+Vector: -4,-4,
+Result: -4,-4
+left: 5-8+7*4 right: 8
+String is: 5-8+7*4
+left: 5 right: 8+7*4
+String is: 5
+Result: 5
+String is: 8+7*4
+left: 8 right: 7*4
+String is: 8
+Result: 8
+String is: 7*4
+left: 7 right: 4
+String is: 7
+Result: 7
+String is: 4
+Result: 4
+Vector: 28,28,
+Result: 28,28
+left: 8+7 right: 4
+String is: 8+7
+left: 8 right: 7
+String is: 8
+Result: 8
+String is: 7
+Result: 7
+Vector: 15,15,
+Result: 15,15
+String is: 4
+Result: 4
+Vector: 36,36,60,60,
+Result: 36,60
+left: 5-8 right: 7*4
+String is: 5-8
+left: 5 right: 8
+String is: 5
+Result: 5
+String is: 8
+Result: 8
+Vector: -3,-3,
+Result: -3,-3
+String is: 7*4
+left: 7 right: 4
+String is: 7
+Result: 7
+String is: 4
+Result: 4
+Vector: 28,28,
+Result: 28,28
+left: 5-8+7 right: 4
+String is: 5-8+7
+left: 5 right: 8+7
+String is: 5
+Result: 5
+String is: 8+7
+left: 8 right: 7
+String is: 8
+Result: 8
+String is: 7
+Result: 7
+Vector: 15,15,
+Result: 15,15
+left: 5-8 right: 7
+String is: 5-8
+left: 5 right: 8
+String is: 5
+Result: 5
+String is: 8
+Result: 8
+Vector: -3,-3,
+Result: -3,-3
+String is: 7
+Result: 7
+Vector: -10,-10,4,4,
+Result: -10,4
+String is: 4
+Result: 4
+Vector: -55,-31,25,25,-40,16,
+Result: -55,25
+String is: 8
+Result: 8
+Vector: -47,65,-31,17,-16,40,-63,17,
+Result: -63,65
+String is: 9
+Result: 9
+Vector: -70,200,-94,32,-52,130,-72,8,-54,74,
+Result: -94,200
+200
