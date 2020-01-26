@@ -5,6 +5,10 @@
 using std::vector;
 using std::pair;
 
+/*
+Time: O(V+E)
+*/
+
 void explore (vector<vector<int>>& adj, vector<int>& visited, int x) {
     visited[x] = 1;
     for (size_t i = 0; i < adj[x].size(); ++i) {
