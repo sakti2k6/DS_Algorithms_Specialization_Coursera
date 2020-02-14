@@ -20,9 +20,9 @@ struct edge {
     edge (int v_, Len w_) 
         : v(v_), w(w_) {}
 
-    bool operator <( const edge& e) const {
-        return w > e.w ;
-    }
+//    bool operator <( const edge& e) const {
+//        return w > e.w ;
+//    }
 };
 
 struct compare {
@@ -37,76 +37,12 @@ typedef vector<vector<edge>> Adj;
 
 // Vector of two priority queues - for forward and backward searches.
 // Each priority queue stores the closest unprocessed node in its head.
-//typedef priority_queue<edge, vector<edge>, compare> PQueue; 
+typedef priority_queue<edge, vector<edge>, compare> PQueue; 
 
 //typedef priority_queue<pair<Len, int>,vector<pair<Len,int>>,greater<pair<Len,int>>> PQueue;
 
 //const Len INF = numeric_limits<Len>::max();
 const Len INF = -1;
-
-class PQueue {
-    public:
-    vector<edge> minH;
-    PQueue(int n) {
-        minH.reserve(n);
-    }
-
-    int parent(int i) {
-        return (i-1)/4;
-    }
-
-    int child (int p, int i) {
-        return 4 * p + (i + 1);
-    }
-
-    int size() {
-        return minH.size();
-    }
-
-    void shiftUp(int i) {
-        int pi;
-        while (i != 0) {
-            pi = parent(i);
-            if (minH[i] < minH[pi]) {
-                swap(minH[i], minH[pi]);
-                i = pi;
-            } else {
-                return;
-            }
-        }
-    }
-
-    void shiftDown(int i) {
-        int c = 0;
-        int id = i;
-        while ( i < size()) {
-            while (c < 4) {
-                int ci = child (i, c);
-                if (ci >= size()) break;
-                if (minH[ci] < minH[id]) {
-                    id = ci;
-                }
-            }
-        }
-    }
-    
-
-
-
-};
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 class Bidijkstra {
     // Number of nodes
@@ -124,8 +60,8 @@ class Bidijkstra {
     vector<Len> distF_;
     vector<Len> distB_;
     // Stores all the nodes visited either by forward or backward search.
-    vector<bool> visitedF;
-    vector<bool> visitedB;
+    vector<char> visitedF;
+    vector<char> visitedB;
 
 public:
     Bidijkstra(int n, Adj adjF, Adj adjB)
@@ -137,8 +73,8 @@ public:
         for (int i=0; i < n_; ++i) {
             distF_[i] = -1;
             distB_[i] = -1;
-            visitedF[i] = 0;
-            visitedB[i] = 0;
+            visitedF[i] = '0';
+            visitedB[i] = '0';
         }
     }
 
@@ -173,8 +109,10 @@ public:
         for (const auto& e: adjF_[s]) {
             if (distF_[e.v] == INF || distF_[e.v] > distF_[s] + e.w) {
                 distF_[e.v] = distF_[s] + e.w;
-                if (!visitedF[e.v])
+                if (visitedF[e.v] == '0') {
+                    visitedF[e.v] = '1';
                     qF.push(edge(e.v, distF_[e.v]));
+                }
             }
         }
     }
@@ -183,17 +121,32 @@ public:
         for (const auto& e: adjB_[s]) {
             if (distB_[e.v] == INF || distB_[e.v] > distB_[s] + e.w) {
                 distB_[e.v] = distB_[s] + e.w;
-                if (!visitedB[e.v])
+                if (visitedB[e.v] == '0') {
+                    visitedB[e.v] = '1';
                     qB.push(edge(e.v, distB_[e.v]));
+                }
             }
         }
     }
 
+//    void process(bool side) {
+//        if (side) {
+//            auto e = qF.top();
+//            qF.pop();
+//            visitedF.insert(e.v);
+//            relaxEdgeF(e.v);
+//        } else {
+//            auto e = qB.top();
+//            qB.pop();
+//            visitedB.insert(e.v);
+//            relaxEdgeB(e.v);
+//        }
+//    }
 
     Len findShortestDist() {
         Len currDist = std::numeric_limits<Len>::max();
         for (int v = 0; v < n_; ++v) {
-            if ((visitedF[v] == 1 || visitedB[v] == 1) && distF_[v] != INF && distB_[v] != INF && distF_[v] + distB_[v] < currDist) 
+            if ((visitedF[v] == '2' || visitedB[v] == '2') && distF_[v] != INF && distB_[v] != INF && distF_[v] + distB_[v] < currDist) 
                 currDist = distF_[v] + distB_[v];
         }
 
@@ -212,27 +165,25 @@ public:
         distF_[s] = 0;
         distB_[t] = 0;
         qF.push(edge(s, 0));
-        //visitedF[s] = 1;
+        visitedF[s] = '1';
         qB.push(edge(t, 0));
-        //visitedB[t] = 1;
+        visitedB[t] = '1';
 
         while (!qF.empty() && !qB.empty()) {
             auto f = qF.top();
             qF.pop();
-            if (!visitedF[f.v]) { 
-                visitedF[f.v] = 1;
-                relaxEdgeF(f.v, qF);
-                if (visitedB[f.v] == 1) 
-                    return findShortestDist();
-            }
+            visitedF[f.v] = '2';
+            relaxEdgeF(f.v, qF);
+            if (visitedB[f.v] == '2') 
+                return findShortestDist();
+            
             auto b = qB.top();
             qB.pop();
-            if (!visitedB[b.v]) {
-                visitedB[b.v] = 1;
-                relaxEdgeB(b.v, qB);
-                if (visitedF[b.v] == 1) 
-                    return findShortestDist();
-            }
+            visitedB[b.v] = '2';
+            relaxEdgeB(b.v, qB);
+            if (visitedF[b.v] == '2') 
+                return findShortestDist();
+
            // printQ();
         }
         return -1;
@@ -268,7 +219,7 @@ int main() {
     //return 0;
 }
 
-/*
+
 int main2() {
     int n, m;
     ifstream test("test2.txt");
@@ -294,4 +245,4 @@ int main2() {
 
     return 0;
 }
-*/
+

@@ -37,63 +37,17 @@ typedef vector<vector<edge>> Adj;
 
 // Vector of two priority queues - for forward and backward searches.
 // Each priority queue stores the closest unprocessed node in its head.
-//typedef priority_queue<edge, vector<edge>, compare> PQueue; 
+typedef priority_queue<edge, vector<edge>, compare> PQueue; 
 
 //typedef priority_queue<pair<Len, int>,vector<pair<Len,int>>,greater<pair<Len,int>>> PQueue;
 
 //const Len INF = numeric_limits<Len>::max();
 const Len INF = -1;
 
-class PQueue {
+class PriorityQueue {
     public:
-    vector<edge> minH;
-    PQueue(int n) {
-        minH.reserve(n);
-    }
-
-    int parent(int i) {
-        return (i-1)/4;
-    }
-
-    int child (int p, int i) {
-        return 4 * p + (i + 1);
-    }
-
-    int size() {
-        return minH.size();
-    }
-
-    void shiftUp(int i) {
-        int pi;
-        while (i != 0) {
-            pi = parent(i);
-            if (minH[i] < minH[pi]) {
-                swap(minH[i], minH[pi]);
-                i = pi;
-            } else {
-                return;
-            }
-        }
-    }
-
-    void shiftDown(int i) {
-        int c = 0;
-        int id = i;
-        while ( i < size()) {
-            while (c < 4) {
-                int ci = child (i, c);
-                if (ci >= size()) break;
-                if (minH[ci] < minH[id]) {
-                    id = ci;
-                }
-            }
-        }
-    }
-    
-
-
-
-};
+    vector<int
+}
 
 
 
