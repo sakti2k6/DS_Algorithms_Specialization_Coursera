@@ -60,8 +60,8 @@ class Bidijkstra {
     vector<Len> distF_;
     vector<Len> distB_;
     // Stores all the nodes visited either by forward or backward search.
-    vector<int> visitedF;
-    vector<int> visitedB;
+    vector<char> visitedF;
+    vector<char> visitedB;
 
 public:
     Bidijkstra(int n, Adj adjF, Adj adjB)
@@ -73,8 +73,8 @@ public:
         for (int i=0; i < n_; ++i) {
             distF_[i] = -1;
             distB_[i] = -1;
-            visitedF[i] = 0;
-            visitedB[i] = 0;
+            visitedF[i] = '0';
+            visitedB[i] = '0';
         }
     }
 
@@ -109,8 +109,8 @@ public:
         for (const auto& e: adjF_[s]) {
             if (distF_[e.v] == INF || distF_[e.v] > distF_[s] + e.w) {
                 distF_[e.v] = distF_[s] + e.w;
-                if (!visitedF[e.v]) {
-                    visitedF[e.v] = 1;
+                if (visitedF[e.v] == '0') {
+                    visitedF[e.v] = '1';
                     qF.push(edge(e.v, distF_[e.v]));
                 }
             }
@@ -121,8 +121,8 @@ public:
         for (const auto& e: adjB_[s]) {
             if (distB_[e.v] == INF || distB_[e.v] > distB_[s] + e.w) {
                 distB_[e.v] = distB_[s] + e.w;
-                if (!visitedB[e.v]) {
-                    visitedB[e.v] = 1;
+                if (visitedB[e.v] == '0') {
+                    visitedB[e.v] = '1';
                     qB.push(edge(e.v, distB_[e.v]));
                 }
             }
@@ -144,19 +144,15 @@ public:
 //    }
 
     Len findShortestDist() {
-        Len currDist = INF;
-        for (const int& v: visitedF) {
-            if (v == 2 && distF_[v] != INF && distB_[v] != INF && distF_[v] + distB_[v] < currDist) 
+        Len currDist = std::numeric_limits<Len>::max();
+        for (int v = 0; v < n_; ++v) {
+            if ((visitedF[v] == '2' || visitedB[v] == '2') && distF_[v] != INF && distB_[v] != INF && distF_[v] + distB_[v] < currDist) 
                 currDist = distF_[v] + distB_[v];
         }
 
-        for (const int& v: visitedB) {
-            if (v == 2 && distF_[v] != INF && distB_[v] != INF && distF_[v] + distB_[v] < currDist) 
-                currDist = distF_[v] + distB_[v];
-        }
 
-        //if (currDist == INF) 
-        //    currDist = -1;
+        if (currDist == std::numeric_limits<Len>::max()) 
+            currDist = -1;
 
         return currDist;
     }
@@ -169,23 +165,23 @@ public:
         distF_[s] = 0;
         distB_[t] = 0;
         qF.push(edge(s, 0));
-        visitedF[s] = 1;
+        visitedF[s] = '1';
         qB.push(edge(t, 0));
-        visitedB[t] = 1;
+        visitedB[t] = '1';
 
-        while (!qF.empty() || !qB.empty()) {
+        while (!qF.empty() && !qB.empty()) {
             auto f = qF.top();
             qF.pop();
-            visitedF[f.v] = 2;
+            visitedF[f.v] = '2';
             relaxEdgeF(f.v, qF);
-            if (visitedB[f.v] == 2) 
+            if (visitedB[f.v] == '2') 
                 return findShortestDist();
             
             auto b = qB.top();
             qB.pop();
-            visitedB[b.v] = 2;
+            visitedB[b.v] = '2';
             relaxEdgeB(b.v, qB);
-            if (visitedF[b.v] == 2) 
+            if (visitedF[b.v] == '2') 
                 return findShortestDist();
 
            // printQ();
@@ -220,4 +216,33 @@ int main() {
         //test >> u >> v;
         printf("%lld\n", bidij.query(u-1, v-1));
     }
+    //return 0;
 }
+
+
+int main2() {
+    int n, m;
+    ifstream test("test2.txt");
+    test >> n >> m;
+    Adj adjF(n);
+    Adj adjB(n);
+    for (int i=0; i<m; ++i) {
+        int u, v, c;
+        test >> u >> v >> c;
+        adjF[u-1].push_back(edge(v-1, c));
+        adjB[v-1].push_back(edge(u-1, c));
+    }
+
+    Bidijkstra bidij(n, adjF, adjB);
+
+    int t;
+    test >> t;
+    for (int i=0; i<t; ++i) {
+        int u, v;
+        test >> u >> v;
+        printf("%lld\n", bidij.query(u-1, v-1));
+    }
+
+    return 0;
+}
+
