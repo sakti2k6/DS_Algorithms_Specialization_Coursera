@@ -21,7 +21,11 @@ struct edge {
         : v(v_), w(w_) {}
 
     bool operator <( const edge& e) const {
-        return w > e.w ;
+        return w < e.w ;
+    }
+
+    void print() {
+        cout << "(" << v << "," << w << "), " ;
     }
 };
 
@@ -44,23 +48,24 @@ typedef vector<vector<edge>> Adj;
 //const Len INF = numeric_limits<Len>::max();
 const Len INF = -1;
 
+//template<typename T>
 class PQueue {
     public:
-    vector<edge> minH;
-    PQueue(int n) {
+    int d = 2;
+    int size = 0;
+    vector< edge > minH;
+    PQueue(int n, int d_) {
         minH.reserve(n);
+        d = d_;
+        size = 0;
     }
 
     int parent(int i) {
-        return (i-1)/4;
+        return (i-1)/d;
     }
 
     int child (int p, int i) {
-        return 4 * p + (i + 1);
-    }
-
-    int size() {
-        return minH.size();
+        return d * p + (i + 1);
     }
 
     void shiftUp(int i) {
@@ -77,40 +82,65 @@ class PQueue {
     }
 
     void shiftDown(int i) {
-        int c = 0;
-        int id = i;
-        while ( i < size()) {
-            while (c < 4) {
+        while ( i < size) {
+            int id = i;
+            int c = 0;
+            while (c < d) {
                 int ci = child (i, c);
-                if (ci >= size()) break;
+                if (ci >= size) break;
                 if (minH[ci] < minH[id]) {
                     id = ci;
                 }
+                c += 1;
             }
+
+            if (i == id) return;
+            swap(minH[i], minH[id]);
+            i = id;
         }
     }
     
+    edge top() {
+        return minH[0];
+    }
 
+    void push(edge e) {
+        size += 1;
+        minH.push_back(e);
+        //minH[size-1] = e;
+        shiftUp(size-1);
+    }
 
+    bool empty() {
+        return size == 0;
+    }
 
+    edge pop() {
+        auto r = top();
+        swap(minH[size-1], minH[0]);
+        size -= 1;
+        minH.pop_back();
+        shiftDown(0);
+        return r;
+    }
+
+    void print() {
+        for (Len i = 0; i < size; ++i) 
+            minH[i].print();
+        cout << endl;
+    }
+
+    void reset() {
+        minH.clear();
+        size = 0;
+    }
 };
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 class Bidijkstra {
     // Number of nodes
     int n_;
+
     // Graph adj_[0] and cost_[0] correspond to the initial graph,
     // adj_[1] and cost_[1] correspond to the reversed graph.
     // Graphs are stored as vectors of adjacency lists corresponding
@@ -126,10 +156,12 @@ class Bidijkstra {
     // Stores all the nodes visited either by forward or backward search.
     vector<bool> visitedF;
     vector<bool> visitedB;
+    PQueue qF;
+    PQueue qB;
 
 public:
-    Bidijkstra(int n, Adj adjF, Adj adjB)
-        : n_(n), adjF_(adjF), adjB_(adjB),distF_(n, INF), distB_(n, INF), visitedF(n, 0), visitedB(n, 0) {}
+    Bidijkstra(int n, Len k, Adj adjF, Adj adjB)
+        : n_(n), adjF_(adjF), adjB_(adjB),distF_(n, INF), distB_(n, INF), visitedF(n, 0), visitedB(n, 0), qF(k, 4), qB(k, 4) {}
 
     // Initialize the data structures before new query,
     // clear the changes made by the previous query.
@@ -140,6 +172,8 @@ public:
             visitedF[i] = 0;
             visitedB[i] = 0;
         }
+        qF.reset();
+        qB.reset();
     }
 
 //    void printQ() {
@@ -169,7 +203,7 @@ public:
 //        cout << endl;
 //    }
 
-    void relaxEdgeF(int s, PQueue& qF) {
+    void relaxEdgeF(int s) {
         for (const auto& e: adjF_[s]) {
             if (distF_[e.v] == INF || distF_[e.v] > distF_[s] + e.w) {
                 distF_[e.v] = distF_[s] + e.w;
@@ -179,7 +213,7 @@ public:
         }
     }
 
-    void relaxEdgeB(int s, PQueue& qB) {
+    void relaxEdgeB(int s) {
         for (const auto& e: adjB_[s]) {
             if (distB_[e.v] == INF || distB_[e.v] > distB_[s] + e.w) {
                 distB_[e.v] = distB_[s] + e.w;
@@ -207,8 +241,6 @@ public:
     // Returns the distance from s to t in the graph.
     Len query(int s, int t) {
         clear();
-        PQueue qF;
-        PQueue qB;
         distF_[s] = 0;
         distB_[t] = 0;
         qF.push(edge(s, 0));
@@ -217,23 +249,24 @@ public:
         //visitedB[t] = 1;
 
         while (!qF.empty() && !qB.empty()) {
-            auto f = qF.top();
-            qF.pop();
+            auto f = qF.pop();
+            //qF.pop();
             if (!visitedF[f.v]) { 
                 visitedF[f.v] = 1;
-                relaxEdgeF(f.v, qF);
+                relaxEdgeF(f.v);
                 if (visitedB[f.v] == 1) 
                     return findShortestDist();
             }
-            auto b = qB.top();
-            qB.pop();
+            auto b = qB.pop();
+            //qB.pop();
             if (!visitedB[b.v]) {
                 visitedB[b.v] = 1;
-                relaxEdgeB(b.v, qB);
+                relaxEdgeB(b.v);
                 if (visitedF[b.v] == 1) 
                     return findShortestDist();
             }
-           // printQ();
+            //qF.print();
+            //qB.print();
         }
         return -1;
     }
@@ -241,48 +274,55 @@ public:
 
 int main() {
     int n, m;
-    //ifstream test("test2.txt");
-    //test >> n >> m;
     scanf("%d%d", &n, &m);
     Adj adjF(n);
     Adj adjB(n);
+    int s = 0;
     for (int i=0; i<m; ++i) {
         int u, v, c;
         scanf("%d%d%d", &u, &v, &c);
-        //test >> u >> v >> c;
         adjF[u-1].push_back(edge(v-1, c));
         adjB[v-1].push_back(edge(u-1, c));
+        if (adjF[u-1].size() > s) 
+            s = adjF[u-1].size();
+        if (adjB[v-1].size() > s) 
+            s = adjB[u-1].size();
     }
 
-    Bidijkstra bidij(n, adjF, adjB);
+    Bidijkstra bidij(n, 2 * s, adjF, adjB);
 
     int t;
     scanf("%d", &t);
-    //test >> t;
     for (int i=0; i<t; ++i) {
         int u, v;
         scanf("%d%d", &u, &v);
-        //test >> u >> v;
         printf("%lld\n", bidij.query(u-1, v-1));
     }
     //return 0;
 }
 
 /*
-int main2() {
+int main() {
     int n, m;
     ifstream test("test2.txt");
     test >> n >> m;
     Adj adjF(n);
     Adj adjB(n);
+    Len s = 0;
     for (int i=0; i<m; ++i) {
         int u, v, c;
         test >> u >> v >> c;
         adjF[u-1].push_back(edge(v-1, c));
         adjB[v-1].push_back(edge(u-1, c));
+        if (adjF[u-1].size() > s) 
+            s = adjF[u-1].size();
+        if (adjB[v-1].size() > s) 
+            s = adjB[u-1].size();
     }
 
-    Bidijkstra bidij(n, adjF, adjB);
+    Len k = n * s;
+    cout << "SIZE: " << k << endl;
+    Bidijkstra bidij(n, k, adjF, adjB);
 
     int t;
     test >> t;
@@ -292,6 +332,18 @@ int main2() {
         printf("%lld\n", bidij.query(u-1, v-1));
     }
 
+    return 0;
+}
+
+int main4() {
+    PQueue pq(10, 2);
+    pq.push(edge(3, 5));
+    pq.push(edge(2, 6));
+    pq.push(edge(10, 1));
+    pq.print();
+    cout << pq.pop().w << endl;
+    pq.push(edge(11,8));
+    pq.print();
     return 0;
 }
 */
