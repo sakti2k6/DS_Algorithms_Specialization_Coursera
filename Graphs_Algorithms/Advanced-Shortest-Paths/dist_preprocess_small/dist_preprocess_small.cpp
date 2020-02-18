@@ -14,13 +14,13 @@ using namespace std;
 
 using Adj = vector<vector<pair<int, int>>>; 
 using distMap = unordered_map<int, int> ;
+static constexpr int INF = numeric_limits<int>::max() / 2;
 
 class Graph {
 
 public:
 Graph() {
     read_stdin();
-    bidistance.resize(2, vector<int>(N, INF));
 }
 
 int get_n() { return N;}
@@ -34,21 +34,41 @@ vector<pair<int, int>>& get_adjacent(int v, bool forward = true) {
 }
 
 void preprocess() {
-    //distance.resize(N, INF);
-    // Priority queue will store pairs of (importance, node) with the least important node in the head
-    priority_queue<pair<int, int>, vector<pair<int,int>>, greater<pair<int, int>>> queue;
+    initializeVertex();
 
-    // Implement the rest of the algorithm yourself
+    // Priority queue will store pairs of (importance, node) with the least important node in the head
+    StlHeap impQ;
+    //Initialize impQ with default priorities
+    for (int i = 0; i < N; ++i) {
+        impQ.push(vertices[i].importance, i);
+    }
+
+    while(!impQ.empty()) {
+        int current = impQ.pop().second;
+        rank.push_back(current);
+        vertices[current].contracted = true;
+
+        //Find maximum incoming edge
+        int inMax = max_element(incoming_edges[current].begin(), incoming_edges[current].end())->first;
+        //Find maximum outgoing edge
+        int outMax = max_element(outgoing_edges[current].begin(), outgoing_edges[current].end())->first;
+
+        //Contract each of the incoming edges of current vertex;
+        for (int i = 0; i < incoming_edges[current].size(); ++i) {
+            int next = incoming_edges[current][i].second;
+            if (vertices[next].contracted) continue;
+            int nextDist = incoming_edges[current][i].first;
+            vector<Shortcut> shortcuts = simulateContraction(next, nextDist, current, inMax + outMax);
+            do_shortcut(shortcuts);
+        }
+    }
+    
 }
 
 // Returns distance from s to t in the graph
-int query(int u, int w) {
-    update(u, 0, true);
-    update(w, 0, false);
-    s = u; 
-    t = w;
-    // Implement the rest of the algorithm yourself
-
+int query(int s, int t) {
+    clear();
+    
     return -1;
 }
 
@@ -60,65 +80,63 @@ typedef int Vertex;
 int N;
 // Source and target
 int s, t;
-// Estimate of the distance from s to t
-// int estimate = INF;
 // Lists of edges outgoing from each node
 vector<vector<pair<int, int>>> outgoing_edges;
 // Lists of edges incoming to each node
 vector<vector<pair<int, int>>> incoming_edges;
-
-static constexpr int INF = numeric_limits<int>::max() / 2;
 
 // Ranks of nodes - positions in the node ordering
 vector<int> rank;
 
 // Distance to node v, bidistance[0][v] - from source in the forward search, bidistance[1][v] - from target
 // in the backward search.
-vector<vector<Distance>> bidistance;
+vector<Distance> distF;
+vector<Distance> distR;
 
 // Wrapper around STL priority_queue
 class StlHeap {
-public:
+    public:
     using T = pair<Distance, Vertex>;
     using Queue = priority_queue<T, vector<T>, greater<T>>;
-
+    
     StlHeap() {
         queue.reset(new Queue());
     }
-
+    
     bool empty() const {
         return queue->empty();
     }
-
-    void update(Vertex v, Distance d) {
+    
+    void push(Vertex v, Distance d) {
         queue->push(make_pair(d,v));
     }
-
+    
     void clear() {
         queue.reset(new Queue());
     }
-
+    
     pair<Distance, Vertex> top() {
         return queue->top();
     }
-
+    
     pair<Distance, Vertex> pop() {
         pair<Distance, Vertex> top = queue->top();
         queue->pop();
         return top;
     }
-private:
+    private:
     unique_ptr<Queue> queue;
 };
 
 // Priority queues for forward and backward searches
-StlHeap diqueue[2];
+StlHeap minpqF;
+StlHeap minpqR;
 
 struct Shortcut {
-        int from;
-        int to;
-        int cost;
-        Shortcut( int from_, int to_, int cost_) : from(from_), to(to_), cost(cost_) {};
+    int from;
+    int to;
+    int cost;
+    Shortcut( int from_, int to_, int cost_) : from(from_), to(to_), cost(cost_) {};
 };
 
 struct VertexMap {
@@ -135,9 +153,9 @@ struct VertexMap {
 
 vector<VertexMap> vertices;
 
-void initializeVertex (int numVertices) {
-    vertices.resize(numVertices);
-    for (int i = 0; i < numVertices; ++i) {
+void initializeVertex () {
+    vertices.resize(N);
+    for (int i = 0; i < N; ++i) {
         vertices[i].numSC = 0;
         vertices[i].contracted = false;
         vertices[i].shortC = 0;
@@ -150,7 +168,7 @@ distMap dijkstra (int s, int maxD) {
     distMap distM;
     distM[s] = 0;
     StlHeap minPQ;
-    minPQ.update(0, s);
+    minPQ.push(0, s);
     int hops = -1;
 
     while (!minPQ.empty()) {
@@ -166,7 +184,7 @@ distMap dijkstra (int s, int maxD) {
             int next_cost = distM[current] + edge_cost;
             if (!distM.count(next) || next_cost < distM[next]) {
                 distM[next] = next_cost;
-                minPQ.update(next_cost, next);
+                minPQ.push(next_cost, next);
             }
         }
     }
@@ -188,72 +206,59 @@ vector<Shortcut> simulateContraction (int s, int inDist, int v, int maxD) {
 }
 
 
-void do_shortcut(int v, vector<Shortcut>& shortcuts) {
+void do_shortcut(vector<Shortcut>& shortcuts) {
     for (int i = 0; i < shortcuts.size(); ++i) {
         add_edge( shortcuts[i].from, shortcuts[i].to, shortcuts[i].cost);
     }
 }
 
 
-
-// Try to relax the node v using distance d either in the forward or in the backward search
-void update(int v, int d, bool forward) {
-    // Implement this method yourself
+void relaxEdge(int v) {
+    if (
+    for 
 }
 
-class VertexSet
-{
-public:
-    VertexSet(int n = 0) : visited(n) {}
-    void resize(int n) {
-        visited.resize(n);
-    }
-    void add(int v) {
-        if (!visited[v]) {
-            vertices.push_back(v);
-            visited[v] = true;
+int biDijkstra (int s, int t) {
+    minpqF.push(0, s);
+    distF[s] = 0;
+
+    minpqR.push(0, t);
+    distR[t] = 0;
+    
+    // Estimate of the distance from s to t
+    int estimate = INF;
+
+    int current;
+    while (!minpqF.empty() && !minpqR.empty()) {
+        current = minpqF.pop().second;
+        visitedF[current] = true;
+        if (distF[current] >= estimate) break;
+        if (visitedR[current] && distF[current] + distR[current] < estimate) {
+            estimate = distF[current] + distR[current];
         }
-    }
-    const vector<int>& get() const {
-        return vertices;
-    }
-    const bool has(int v) {
-        return visited[v];
-    }
-    void clear() {
-        for (int v : vertices) {
-            visited[v] = false;
+
+        relaxEdge(current, "forward");
+
+        current = minpqR.pop().second;
+        visitedR[current] = true;
+        if (distR[current] >= estimate) break;
+        if (visitedF[current] && distF[current] + distR[current] < estimate) {
+            estimate = distF[current] + distR[current];
         }
-        vertices.clear();
+        
+        relaxEdge(current, "backward");
     }
 
-private:
-    vector<int> visited;
-    vector<int> vertices;
-};
-VertexSet visited;
-
-// QEntry = (distance, vertex)
-typedef pair<int,int> QEntry;
-priority_queue<QEntry, vector<QEntry>, greater<QEntry>> queue;
-
-
-
-// Adds all the shortcuts for the case when node v is contracted, and returns the importance of node v
-// in this case
-int do_shortcut(int v, vector<Shortcut>& shortcuts, int& mylevel) {
-    // Implement this method yourself
-
-    // Add neighbors and shortcut cover heuristics
-    return (shortcuts.size() - outgoing_edges[v].size() - incoming_edges[v].size()) + mylevel;
+    if (estimate == INF) return -1;
+    return estimate;
 }
+
 
 void set_n(int n) {
     N = n;
     outgoing_edges.resize(n);
     incoming_edges.resize(n);
 }
-
 
 void add_edge_to_list(vector<pair<int,int>>& elist, int w, int c) {
     for (int i = 0; i < elist.size(); ++i) {
@@ -278,7 +283,26 @@ void add_edge(int u, int v, int c) {
 }
 
 void finalize() {
-    // Remove unnecessary edges
+    // initialize dist vectors for bidirectional dijkstra
+    distF.resize(N, INF);
+    distR.resize(N, INF);
+    visited.resize(N, false);
+    visited.resize(N, false);
+}
+
+vector<bool> visitedF;
+vector<bool> visitedR;
+
+void clear() {
+    for (int i = 0; i < N; ++i) {
+        distF[i] = INF;
+        distR[i] = INF;
+        visitedF[i] =false;
+        visitedR[i] = false;
+    }
+
+    minpqF.clear();
+    minpqR.clear();
 }
 
 bool read_stdin() {
