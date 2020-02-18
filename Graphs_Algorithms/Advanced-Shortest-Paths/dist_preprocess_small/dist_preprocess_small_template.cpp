@@ -7,107 +7,6 @@
 #include <iostream>
 #include <memory>
 #include <cassert>
-#include <unordered_set>
-#include <unordered_map>
-
-using namespace std;
-
-using Adj = vector<vector<pair<int, int>>>; 
-using distMap = unordered_map<int, int> ;
-
-class VertexSet {
-public:
-    int numSC = 0;
-    bool contracted = false;
-    int shortC = 0;
-    int level = 0;
-    int importance;
-
-//The method to correctly calculate shortcover is sighlty complicated. Need a parameter in each vertex to know if it has an new shortcut edge from/to.
-//Then we calculate the number of neighbours of a vertex who have these parameter set.
-    int calculateImportance(int v, int numShortcuts) {
-        int edgeDiff = numSC + numShortcuts - outgoing_edges[v].size() - incoming_edges[v].size();
-        int contractedNeighbours = 0;
-        for (int i = 0; i < outgoing_edges[v].size(); ++i) {
-            int neighbour = outgoing_edges[v][i].second;
-            if (contracted[neighbour])
-                contractedNeighbours++;
-        }
-
-        for (int i = 0; i < incoming_edges[v].size(); ++i) {
-            int neighbour = incoming_edges[v][i].second;
-            if (contracted[neighbour])
-                contractedNeighbours++;
-        }
-
-        int shortCover = 0;
-        int importance = edgeDiff + 10 * contractedNeighbours + shortCover;
-        return importance;
-    }
-    
-    void setImportance(int v, int numShortcuts, int imp) {
-        importance = imp;
-        shortC += numShortcuts;
-        numSC += numShortcuts;
-    }
-};
-
-vector<VertexSet> vertex;
-
-distMap dijkstra (Adj& outgoing_edges, int s, int maxD) {
-    distMap distM;
-    distM[s] = 0;
-    StlHeap minPQ;
-    minPQ.update(0, s);
-    int hops = -1;
-
-    while (!minPQ.empty()) {
-        auto current = minQ.pop();
-        hops += 1;
-        if (hops > 3 || distM[current] >= maxD) break;
-
-        for (int i = 0; i < outgoing_edges[current].size(); ++i) {
-            int next = outgoing_edges[current][i].second;
-            int edge_cost = outgoing_edges[current][i].first;
-            if (contracted[next]) continue;
-
-            int next_cost = distM[current] + edge_cost;
-            if (!distM.count(next) || next_cost < distM[next]) {
-                distM[next] = next_cost;
-                minQ.update(next_cost, next);
-            }
-        }
-    }
-    return distM;
-}
-
-vector<Shortcut> simulateContraction (int s, int inDist, int v, Adj& outgoing_edges, int maxD) {
-    vector<Shortcut> shortcuts;
-    distMap distM = dijkstra (outgoing_edges, s, maxD);
-    for (int i = 0; i < outgoing_edges[v].size(); ++i) {
-        int next = outgoing_edges[v][i].second;
-        int outDist = outgoing_edges[v][i].first;
-        if (!distM.count(next) || (inDist + outDist) < distM[next]) {
-            shortcuts.emplace_back( Shortcut( s, next, inDist + outDist) );
-        }
-    }
-
-    return shortcuts;
-}
-
-int computeImportance (int v, int numSC, 
-
-int do_shortcut(int v, vector<Shortcut>& shortcuts, int& mylevel) {
-    for (int i = 0; i < shortcuts.size(); ++i) {
-        add_edge( shortcuts.from, shortcuts.to, shortcuts.cost);
-    }
-    // Add neighbors and shortcut cover heuristics
-    return (shortcuts.size() - outgoing_edges[v].size() - incoming_edges[v].size()) + mylevel;
-}
-
-
-
-
 
 class Graph
 {
@@ -121,25 +20,26 @@ class Graph
     // Estimate of the distance from s to t
     int estimate = INFINITY;
     // Lists of edges outgoing from each node
-    vector<vector<pair<int, int>>> outgoing_edges;
+    std::vector<std::vector<std::pair<int, int>>> outgoing_edges;
     // Lists of edges incoming to each node
-    vector<vector<pair<int, int>>> incoming_edges;
+    std::vector<std::vector<std::pair<int, int>>> incoming_edges;
 
-    static constexpr int INFINITY = numeric_limits<int>::max() / 2;
-
+    static constexpr int INFINITY = std::numeric_limits<int>::max() / 2;
+    // Levels of nodes for node ordering
+    std::vector<int> level;
     // Ranks of nodes - positions in the node ordering
-    vector<int> rank;
+    std::vector<int> rank;
 
     // Distance to node v, bidistance[0][v] - from source in the forward search, bidistance[1][v] - from target
     // in the backward search.
-    vector<vector<Distance>> bidistance;
+    std::vector<std::vector<Distance>> bidistance;
 
     // Wrapper around STL priority_queue
     class StlHeap
     {
     public:
-        using T = pair<Distance, Vertex>;
-        using Queue = priority_queue<T, vector<T>, greater<T>>;
+        using T = std::pair<Distance, Vertex>;
+        using Queue = std::priority_queue<T, std::vector<T>, std::greater<T>>;
 
         StlHeap() {
             queue.reset(new Queue());
@@ -150,25 +50,21 @@ class Graph
         }
 
         void update(Vertex v, Distance d) {
-            queue->push(make_pair(d,v));
+            queue->push(std::make_pair(d,v));
         }
 
         void clear() {
             queue.reset(new Queue());
         }
 
-        pair<Distance, Vertex> top() {
-            return queue->top();
-        }
-
-        pair<Distance, Vertex> pop() {
+        std::pair<Distance, Vertex> pop() {
             pair<Distance, Vertex> top = queue->top();
             queue->pop();
             return top;
         }
 
     private:
-        unique_ptr<Queue> queue;
+        std::unique_ptr<Queue> queue;
     };
 
     // Priority queues for forward and backward searches
@@ -176,12 +72,12 @@ class Graph
 public:
     Graph() {
         read_stdin();
-        bidistance.resize(2, vector<int>(N, INFINITY));
+        bidistance.resize(2, std::vector<int>(N, INFINITY));
     }
 
     int get_n() { return N;}
 
-    vector<pair<int, int>>& get_adjacent(int v, bool forward = true) {
+    std::vector<std::pair<int, int>>& get_adjacent(int v, bool forward = true) {
         if (forward) {
             return outgoing_edges[v];
         } else {
@@ -192,7 +88,7 @@ public:
     void preprocess() {
         distance.resize(N, INFINITY);
         // Priority queue will store pairs of (importance, node) with the least important node in the head
-        priority_queue<pair<int, int>, vector<pair<int,int>>, greater<pair<int, int>>> queue;
+        std::priority_queue<std::pair<int, int>, std::vector<std::pair<int,int>>, std::greater<std::pair<int, int>>> queue;
 
         // Implement the rest of the algorithm yourself
     }
@@ -227,7 +123,7 @@ private:
                 visited[v] = true;
             }
         }
-        const vector<int>& get() const {
+        const std::vector<int>& get() const {
             return vertices;
         }
         const bool has(int v) {
@@ -241,25 +137,24 @@ private:
         }
 
     private:
-        vector<int> visited;
-        vector<int> vertices;
+        std::vector<int> visited;
+        std::vector<int> vertices;
     };
     VertexSet visited;
 
     // QEntry = (distance, vertex)
-    typedef pair<int,int> QEntry;
-    priority_queue<QEntry, vector<QEntry>, greater<QEntry>> queue;
+    typedef std::pair<int,int> QEntry;
+    std::priority_queue<QEntry, std::vector<QEntry>, std::greater<QEntry>> queue;
 
     struct Shortcut {
         int from;
         int to;
         int cost;
-        Shortcut( int from_, int to_, int cost_) : from(from_), to(to_), cost(cost_) {};
     };
 
     // Adds all the shortcuts for the case when node v is contracted, and returns the importance of node v
     // in this case
-    int do_shortcut(int v, vector<Shortcut>& shortcuts, int& mylevel) {
+    int do_shortcut(int v, std::vector<Shortcut>& shortcuts, int& mylevel) {
         // Implement this method yourself
 
         // Add neighbors and shortcut cover heuristics
@@ -273,9 +168,9 @@ private:
     }
 
 
-    void add_edge_to_list(vector<pair<int,int>>& list, int w, int c) {
+    void add_edge_to_list(std::vector<std::pair<int,int>>& list, int w, int c) {
         for (int i = 0; i < list.size(); ++i) {
-            pair<int, int>& p = list[i];
+            std::pair<int, int>& p = list[i];
             if (p.first == w) {
                 if (p.second > c) {
                     p.second = c;
@@ -315,7 +210,7 @@ private:
 int main() {
     Graph g;
     g.preprocess();
-    cout << "Ready" << endl;
+    std::cout << "Ready" << std::endl;
 
     int t;
     assert(scanf("%d", &t) == 1);
