@@ -12,7 +12,7 @@
 
 using namespace std;
 
-using Adj = vector<vector<pair<int, int>>>; 
+//using Adj = vector<vector<Edge>>; 
 using distMap = unordered_map<int, int> ;
 static constexpr int INF = numeric_limits<int>::max() / 2;
 
@@ -25,50 +25,62 @@ Graph() {
 
 int get_n() { return N;}
 
-vector<pair<int, int>>& get_adjacent(int v, bool forward = true) {
-    if (forward) {
-        return outgoing_edges[v];
-    } else {
-        return incoming_edges[v];
-    }
-}
+//vector<Edge>& get_adjacent(int v, bool forward = true) {
+//    if (forward) {
+//        return outgoing_edges[v];
+//    } else {
+//        return incoming_edges[v];
+//    }
+//}
 
 void preprocess() {
+    //printEdges();
     initializeVertex();
 
-    // Priority queue will store pairs of (importance, node) with the least important node in the head
+    // Priority queue will store vertex and its importance with the least important node in the head
     StlHeap impQ;
     //Initialize impQ with default priorities
     for (int i = 0; i < N; ++i) {
-        impQ.push(vertices[i].importance, i);
+        impQ.push(i, vertices[i].importance);
     }
 
+    //impQ.print();
+
     while(!impQ.empty()) {
-        int current = impQ.pop().second;
+        int current = impQ.pop().vertex;
         vertices[current].edgeRank = cntRank++;
         vertices[current].contracted = true;
 
         //Find maximum incoming edge
         int inMax = 0;
-        if (incoming_edges[current].size() > 0) 
-            inMax = (max_element(incoming_edges[current].begin(), incoming_edges[current].end()))->first ;
-        
+        for (int i = 0; i < incoming_edges[current].size(); ++i) {
+            if (incoming_edges[current][i].cost > inMax) 
+                inMax = incoming_edges[current][i].cost;
+        }
+
         //Find maximum outgoing edge
         int outMax = 0;
-        if (outgoing_edges[current].size() > 0) 
-            outMax = (max_element(outgoing_edges[current].begin(), outgoing_edges[current].end()))->first ;
+        for (int i = 0; i < outgoing_edges[current].size(); ++i) {
+            if (outgoing_edges[current][i].cost > outMax) 
+                outMax = outgoing_edges[current][i].cost;
+        }
+
         
-        //cout << inMax << outMax << endl;
+        //cout << "Vertex: " << current << " inMax, outMax: " << inMax << "," << outMax << endl;
 
         //Contract each of the incoming edges of current vertex;
         for (int i = 0; i < incoming_edges[current].size(); ++i) {
-            int next = incoming_edges[current][i].second;
+            int next = incoming_edges[current][i].vertex;
             if (vertices[next].contracted) continue;
-            int nextDist = incoming_edges[current][i].first;
+            int nextDist = incoming_edges[current][i].cost;
             vector<Shortcut> shortcuts = simulateContraction(next, nextDist, current, inMax + outMax);
             do_shortcut(shortcuts);
         }
     }
+
+    //printEdges();
+    //cout << "----Incoming Edges----" << endl;
+    //printEdgesR();
     
 }
 
@@ -83,29 +95,40 @@ private:
 typedef int Distance;
 typedef int Vertex;
 
+struct Edge {
+    int vertex{};
+    int cost{};
+    Edge() {};
+    Edge(int v, int c) : vertex(v), cost(c) {}
+};
+
+struct compare {
+    bool operator()(const Edge& e1, const Edge& e2) {
+        return e1.cost > e2.cost;
+    }
+};
+
 // Number of nodes
 int N;
 // Source and target
 int s, t;
 // Lists of edges outgoing from each node
-vector<vector<pair<int, int>>> outgoing_edges;
+vector<vector<Edge>> outgoing_edges;
 // Lists of edges incoming to each node
-vector<vector<pair<int, int>>> incoming_edges;
+vector<vector<Edge>> incoming_edges;
 
 // Ranks of nodes - positions in the node ordering
 //vector<int> edgeRank;
 int cntRank = 0;
 
-// Distance to node v, bidistance[0][v] - from source in the forward search, bidistance[1][v] - from target
-// in the backward search.
+// Store distances in Bidirectional Dijkstra's
 vector<Distance> distF;
 vector<Distance> distR;
 
 // Wrapper around STL priority_queue
 class StlHeap {
     public:
-    using T = pair<Distance, Vertex>;
-    using Queue = priority_queue<T, vector<T>, greater<T>>;
+    using Queue = priority_queue<Edge, vector<Edge>, compare>;
     
     StlHeap() {
         queue.reset(new Queue());
@@ -115,25 +138,35 @@ class StlHeap {
         return queue->empty();
     }
     
-    void push(Vertex v, Distance d) {
-        queue->push(make_pair(d,v));
+    void push(Vertex v, Distance c) {
+        queue->push(Edge(v, c));
     }
     
     void clear() {
         queue.reset(new Queue());
     }
     
-    pair<Distance, Vertex> top() {
+    Edge top() {
         return queue->top();
     }
     
-    pair<Distance, Vertex> pop() {
-        pair<Distance, Vertex> top = queue->top();
+    Edge pop() {
+        Edge top = queue->top();
         queue->pop();
         return top;
     }
+    
+    void print() {
+        auto pq = queue;
+        while (!pq->empty()) {
+            auto e = pq->top();
+            pq->pop();
+            cout << "V: " << e.vertex << " Imp: " << e.cost << endl;
+        }
+    }
+
     private:
-    unique_ptr<Queue> queue;
+    shared_ptr<Queue> queue;
 };
 
 // Priority queues for forward and backward searches
@@ -178,23 +211,23 @@ distMap dijkstra (int s, int maxD) {
     distMap distM;
     distM[s] = 0;
     StlHeap minPQ;
-    minPQ.push(0, s);
+    minPQ.push(s, 0);
     int hops = -1;
 
     while (!minPQ.empty()) {
-        auto current = minPQ.pop().second;
+        auto current = minPQ.pop().vertex;
         hops += 1;
         if (hops > 3 || distM[current] >= maxD) break;
 
         for (int i = 0; i < outgoing_edges[current].size(); ++i) {
-            int next = outgoing_edges[current][i].second;
-            int edge_cost = outgoing_edges[current][i].first;
+            int next = outgoing_edges[current][i].vertex;
+            int edge_cost = outgoing_edges[current][i].cost;
             if (vertices[next].contracted) continue;
 
             int next_cost = distM[current] + edge_cost;
             if (!distM.count(next) || next_cost < distM[next]) {
                 distM[next] = next_cost;
-                minPQ.push(next_cost, next);
+                minPQ.push(next, next_cost);
             }
         }
     }
@@ -205,10 +238,11 @@ vector<Shortcut> simulateContraction (int s, int inDist, int v, int maxD) {
     vector<Shortcut> shortcuts;
     distMap distM = dijkstra (s, maxD);
     for (int i = 0; i < outgoing_edges[v].size(); ++i) {
-        int next = outgoing_edges[v][i].second;
-        int outDist = outgoing_edges[v][i].first;
+        int next = outgoing_edges[v][i].vertex;
+        int outDist = outgoing_edges[v][i].cost;
         if (!distM.count(next) || (inDist + outDist) < distM[next]) {
             shortcuts.emplace_back( Shortcut( s, next, inDist + outDist) );
+            //vertices[v].contracted = true;
         }
     }
 
@@ -225,6 +259,7 @@ void do_shortcut(vector<Shortcut>& shortcuts) {
 bool checkRelaxCond (int current, int next, const vector<Distance>& cost_so_far, int new_cost) {
     bool nodeRank = vertices[next].edgeRank > vertices[current].edgeRank;
     bool cost = (cost_so_far[next] == INF) || (new_cost < cost_so_far[next]);
+    //cout << "nodeRank: " << nodeRank << " cost: " << cost << endl;
     return nodeRank && cost;
 }
 
@@ -232,30 +267,30 @@ void relaxEdge(int v, string direction) {
     if (direction == "forward") {
 
         for (int i = 0; i < outgoing_edges[v].size(); ++i) {
-            int next = outgoing_edges[v][i].second;
+            int next = outgoing_edges[v][i].vertex;
             if (visitedF[next]) continue;
 
-            int edge_cost = outgoing_edges[v][i].first;
+            int edge_cost = outgoing_edges[v][i].cost;
             int new_cost = distF[v] + edge_cost;
 
             if (checkRelaxCond(v, next, distF, new_cost)) {
                 distF[next] = new_cost;
-                minpqF.push(new_cost, next);
+                minpqF.push(next, new_cost);
             }
         }
 
     } else if (direction == "reverse") {
 
         for (int i = 0; i < incoming_edges[v].size(); ++i) {
-            int next = incoming_edges[v][i].second;
+            int next = incoming_edges[v][i].vertex;
             if (visitedR[next]) continue;
 
-            int edge_cost = incoming_edges[v][i].first;
+            int edge_cost = incoming_edges[v][i].cost;
             int new_cost = distR[v] + edge_cost;
-
             if (checkRelaxCond(v, next, distR, new_cost)) {
                 distR[next] = new_cost;
-                minpqR.push(new_cost, next);
+                minpqR.push(next, new_cost);
+                //cout << "Next: " << next << " new_cost: " << new_cost << endl;
             }
         }
 
@@ -263,36 +298,41 @@ void relaxEdge(int v, string direction) {
 }
 
 int biDijkstra (int s, int t) {
-    minpqF.push(0, s);
+    minpqF.push(s, 0);
     distF[s] = 0;
 
-    minpqR.push(0, t);
+    minpqR.push(t, 0);
     distR[t] = 0;
     
     // Estimate of the distance from s to t
     int estimate = INF;
     
-        cout << "Initial: " << estimate << endl;
-    int current;
+    int currentF, currentR;
     while (!minpqF.empty() && !minpqR.empty()) {
-        current = minpqF.pop().second;
-        visitedF[current] = true;
-        if (distF[current] >= estimate) break;
-        if (visitedR[current] && distF[current] + distR[current] < estimate) {
-            estimate = distF[current] + distR[current];
+        currentF = minpqF.pop().vertex;
+        visitedF[currentF] = true;
+        currentR = minpqR.pop().vertex;
+        visitedR[currentR] = true;
+        if (distF[currentF] >= estimate) break;
+        if (distR[currentR] >= estimate) break;
+        
+        relaxEdge(currentF, "forward");
+        relaxEdge(currentR, "reverse");
+        
+        //cout << "Front: " << currentF << " : " << estimate << endl;
+        
+        if (visitedR[currentF] && distF[currentF] + distR[currentF] < estimate) {
+            estimate = distF[currentF] + distR[currentF];
         }
-        cout << estimate << endl;
-        relaxEdge(current, "forward");
 
-        current = minpqR.pop().second;
-        visitedR[current] = true;
-        if (distR[current] >= estimate) break;
-        if (visitedF[current] && distF[current] + distR[current] < estimate) {
-            estimate = distF[current] + distR[current];
+        
+        
+        //cout << "Reverse: " << currentR << " : " << estimate << endl;
+        
+        if (visitedF[currentR] && distF[currentR] + distR[currentR] < estimate) {
+            estimate = distF[currentR] + distR[currentR];
         }
         
-        cout << estimate << endl;
-        relaxEdge(current, "reverse");
     }
 
     if (estimate == INF) return -1;
@@ -306,17 +346,17 @@ void set_n(int n) {
     incoming_edges.resize(n);
 }
 
-void add_edge_to_list(vector<pair<int,int>>& elist, int w, int c) {
+void add_edge_to_list(vector<Edge>& elist, int v, int c) {
     for (int i = 0; i < elist.size(); ++i) {
-        pair<int, int>& p = elist[i];
-        if (p.first == w) {
-            if (p.second > c) {
-                p.second = c;
+        Edge& p = elist[i];
+        if (p.vertex == v) {
+            if (p.cost > c) {
+                p.cost = c;
             }
             return;
         }
     }
-    elist.push_back(make_pair(w, c));
+    elist.push_back(Edge(v, c));
 }
 
 void add_directed_edge(int u, int v, int c) {
@@ -351,9 +391,28 @@ void clear() {
     minpqR.clear();
 }
 
+void printEdges () {
+    for (int i = 0; i < N; ++i) {
+        cout << i << " :: " ;
+        for (int j = 0; j < outgoing_edges[i].size(); ++j) 
+            cout << i << "->" << outgoing_edges[i][j].vertex << ":" << outgoing_edges[i][j].cost << " , ";
+        cout << "\n";
+    }
+}
+
+void printEdgesR () {
+    for (int i = 0; i < N; ++i) {
+        cout << i << " :: " ;
+        for (int j = 0; j < incoming_edges[i].size(); ++j) 
+            cout << i << "->" << incoming_edges[i][j].vertex << ":" << incoming_edges[i][j].cost << " , ";
+        cout << "\n";
+    }
+}
+
+/*
 bool read_stdin() {
     int u,v,c,n,m;
-    ifstream test("test1.txt");
+    ifstream test("test3.txt");
     test >> n >> m;
     set_n(n);
     for (int i = 0; i < m; ++i) {
@@ -365,23 +424,29 @@ bool read_stdin() {
 }
 };
 
-/*
 int main() {
     std::ios::sync_with_stdio(false);
-    //ifstream test("test2.txt");
     Graph g;
     g.preprocess();
     cout << "Ready" << endl;
 
-  //  int t;
-  //  test >> t;
-  //  for (int i = 0; i < t; ++i) {
-  //      int u, v;
-  //      test >> u >> v;
-  //      cout << g.query(u-1, v-1) << "\n";
-  //  }
+    ifstream test("test3.txt");
+    int u,v,c,n,m;
+    test >> n >> m;
+    cout << n << " " << m << endl;
+    for (int i = 0; i < m; ++i) {
+        test >> u >> v >> c;
+    //    cout << u << " " << v << " " << c << endl;
+    }
+    int t;
+    test >> t;
+    for (int i = 0; i < t; ++i) {
+        int u, v;
+        test >> u >> v;
+        cout << g.query(u-1, v-1) << "\n";
+    }
 }
-
+*/
 
 
 bool read_stdin() {
@@ -396,7 +461,7 @@ bool read_stdin() {
     return true;
 }
 };
-*/
+
 
 int main() {
     std::ios::sync_with_stdio(false);
