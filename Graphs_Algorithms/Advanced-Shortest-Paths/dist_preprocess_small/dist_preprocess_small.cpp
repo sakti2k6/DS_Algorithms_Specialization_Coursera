@@ -7,8 +7,8 @@
 #include <iostream>
 #include <memory>
 #include <cassert>
-#include <unordered_set>
 #include <unordered_map>
+#include <fstream>
 
 using namespace std;
 
@@ -45,13 +45,20 @@ void preprocess() {
 
     while(!impQ.empty()) {
         int current = impQ.pop().second;
-        rank.push_back(current);
+        vertices[current].edgeRank = cntRank++;
         vertices[current].contracted = true;
 
         //Find maximum incoming edge
-        int inMax = max_element(incoming_edges[current].begin(), incoming_edges[current].end())->first;
+        int inMax = 0;
+        if (incoming_edges[current].size() > 0) 
+            inMax = (max_element(incoming_edges[current].begin(), incoming_edges[current].end()))->first ;
+        
         //Find maximum outgoing edge
-        int outMax = max_element(outgoing_edges[current].begin(), outgoing_edges[current].end())->first;
+        int outMax = 0;
+        if (outgoing_edges[current].size() > 0) 
+            outMax = (max_element(outgoing_edges[current].begin(), outgoing_edges[current].end()))->first ;
+        
+        //cout << inMax << outMax << endl;
 
         //Contract each of the incoming edges of current vertex;
         for (int i = 0; i < incoming_edges[current].size(); ++i) {
@@ -69,7 +76,7 @@ void preprocess() {
 int query(int s, int t) {
     clear();
     
-    return -1;
+    return biDijkstra(s, t);
 }
 
 private:
@@ -86,7 +93,8 @@ vector<vector<pair<int, int>>> outgoing_edges;
 vector<vector<pair<int, int>>> incoming_edges;
 
 // Ranks of nodes - positions in the node ordering
-vector<int> rank;
+//vector<int> edgeRank;
+int cntRank = 0;
 
 // Distance to node v, bidistance[0][v] - from source in the forward search, bidistance[1][v] - from target
 // in the backward search.
@@ -144,6 +152,7 @@ struct VertexMap {
     bool contracted{};
     int shortC{};
     int level{};
+    int edgeRank{};
     int importance{};
 
     bool operator <(const VertexMap& v) {
@@ -160,6 +169,7 @@ void initializeVertex () {
         vertices[i].contracted = false;
         vertices[i].shortC = 0;
         vertices[i].level = 0;
+        vertices[i].edgeRank = 0;
         vertices[i].importance = incoming_edges[i].size() * outgoing_edges[i].size();
     }
 }
@@ -212,10 +222,44 @@ void do_shortcut(vector<Shortcut>& shortcuts) {
     }
 }
 
+bool checkRelaxCond (int current, int next, const vector<Distance>& cost_so_far, int new_cost) {
+    bool nodeRank = vertices[next].edgeRank > vertices[current].edgeRank;
+    bool cost = (cost_so_far[next] == INF) || (new_cost < cost_so_far[next]);
+    return nodeRank && cost;
+}
 
-void relaxEdge(int v) {
-    if (
-    for 
+void relaxEdge(int v, string direction) {
+    if (direction == "forward") {
+
+        for (int i = 0; i < outgoing_edges[v].size(); ++i) {
+            int next = outgoing_edges[v][i].second;
+            if (visitedF[next]) continue;
+
+            int edge_cost = outgoing_edges[v][i].first;
+            int new_cost = distF[v] + edge_cost;
+
+            if (checkRelaxCond(v, next, distF, new_cost)) {
+                distF[next] = new_cost;
+                minpqF.push(new_cost, next);
+            }
+        }
+
+    } else if (direction == "reverse") {
+
+        for (int i = 0; i < incoming_edges[v].size(); ++i) {
+            int next = incoming_edges[v][i].second;
+            if (visitedR[next]) continue;
+
+            int edge_cost = incoming_edges[v][i].first;
+            int new_cost = distR[v] + edge_cost;
+
+            if (checkRelaxCond(v, next, distR, new_cost)) {
+                distR[next] = new_cost;
+                minpqR.push(new_cost, next);
+            }
+        }
+
+    }
 }
 
 int biDijkstra (int s, int t) {
@@ -227,7 +271,8 @@ int biDijkstra (int s, int t) {
     
     // Estimate of the distance from s to t
     int estimate = INF;
-
+    
+        cout << "Initial: " << estimate << endl;
     int current;
     while (!minpqF.empty() && !minpqR.empty()) {
         current = minpqF.pop().second;
@@ -236,7 +281,7 @@ int biDijkstra (int s, int t) {
         if (visitedR[current] && distF[current] + distR[current] < estimate) {
             estimate = distF[current] + distR[current];
         }
-
+        cout << estimate << endl;
         relaxEdge(current, "forward");
 
         current = minpqR.pop().second;
@@ -246,7 +291,8 @@ int biDijkstra (int s, int t) {
             estimate = distF[current] + distR[current];
         }
         
-        relaxEdge(current, "backward");
+        cout << estimate << endl;
+        relaxEdge(current, "reverse");
     }
 
     if (estimate == INF) return -1;
@@ -286,8 +332,8 @@ void finalize() {
     // initialize dist vectors for bidirectional dijkstra
     distF.resize(N, INF);
     distR.resize(N, INF);
-    visited.resize(N, false);
-    visited.resize(N, false);
+    visitedF.resize(N, false);
+    visitedR.resize(N, false);
 }
 
 vector<bool> visitedF;
@@ -307,10 +353,11 @@ void clear() {
 
 bool read_stdin() {
     int u,v,c,n,m;
-    assert(scanf("%d %d", &n, &m) == 2);
+    ifstream test("test1.txt");
+    test >> n >> m;
     set_n(n);
     for (int i = 0; i < m; ++i) {
-        assert(scanf("%d %d %d", &u, &v, &c) == 3);
+        test >> u >> v >> c;
         add_edge(u-1, v-1, c);
     }
     finalize();
@@ -318,16 +365,53 @@ bool read_stdin() {
 }
 };
 
+/*
 int main() {
+    std::ios::sync_with_stdio(false);
+    //ifstream test("test2.txt");
+    Graph g;
+    g.preprocess();
+    cout << "Ready" << endl;
+
+  //  int t;
+  //  test >> t;
+  //  for (int i = 0; i < t; ++i) {
+  //      int u, v;
+  //      test >> u >> v;
+  //      cout << g.query(u-1, v-1) << "\n";
+  //  }
+}
+
+
+
+bool read_stdin() {
+    int u,v,c,n,m;
+    cin >> n >> m;
+    set_n(n);
+    for (int i = 0; i < m; ++i) {
+        cin >> u >> v >> c;
+        add_edge(u-1, v-1, c);
+    }
+    finalize();
+    return true;
+}
+};
+*/
+
+int main() {
+    std::ios::sync_with_stdio(false);
     Graph g;
     g.preprocess();
     cout << "Ready" << endl;
 
     int t;
-    assert(scanf("%d", &t) == 1);
+    cin >> t;
     for (int i = 0; i < t; ++i) {
         int u, v;
-        assert(scanf("%d %d", &u, &v) == 2);
-        printf("%d\n", g.query(u-1, v-1));
+        cin >> u >> v;
+        cout << g.query(u-1, v-1) << "\n";
     }
 }
+
+
+
