@@ -12,6 +12,7 @@
 #include <chrono>
 
 using namespace std;
+using namespace std::chrono;
 
 typedef long long int intL;
 typedef long long int Distance;
@@ -148,19 +149,19 @@ public:
     void add_edge_to_list(vector<Edge>& elist, int v, int c, int u) {
        
 /* FIXME: Removing the following loop exceeds the time limit for preprocessing. That means there are a lot of duplicated edges which gets added */
-        for (int i = 0; i < elist.size(); ++i) {
-            Edge& p = elist[i];
-            if (p.vertex == v) {
-                if (p.cost > c) {
-                    p.cost = c;
-                }
-                return;
-            }
+      //  for (int i = 0; i < elist.size(); ++i) {
+      //      Edge& p = elist[i];
+      //      if (p.vertex == v) {
+      //          if (p.cost > c) {
+      //              p.cost = c;
+      //          }
+      //          return;
+      //      }
 
-          //  if (vertices[u].rank > vertices[p.vertex].rank) {
-          //      elist.erase(elist.begin() + i);
-          //  }
-        }
+      //    //  if (vertices[u].rank > vertices[p.vertex].rank) {
+      //    //      elist.erase(elist.begin() + i);
+      //    //  }
+      //  }
         elist.push_back(Edge(v, c));
     }
     
@@ -438,11 +439,23 @@ public:
         }
     }
 
+    void printGraphStatistics() {
+        int osum = 0;
+        int isum = 0;
+        for (const auto& e: outgoing_edges) {
+            osum += e.size();
+        }
+        for (const auto& e: incoming_edges) {
+            isum += e.size();
+        }
+        cout << "#Incoming Edges: " << isum << " #Outgoing Edges: " << osum << endl;
+    }
+
 };
 /*##########################################*/
 
 
-int main() {
+int main2() {
     std::ios::sync_with_stdio(false);
     int u,v,c,n,m;
     cin >> n >> m;
@@ -452,16 +465,9 @@ int main() {
         g.add_edge(u-1, v-1, c);
     }
 
-    // high_resolution_clock::time_point t1 = high_resolution_clock::now();
-
     g.preprocess();
-
-    // high_resolution_clock::time_point t2 = high_resolution_clock::now();
-    
     cout << "Ready" << endl;
 
-    //cout << "Preprocess Time: " << (duration_cast<duration<double>>(t2 - t1)).count() << " seconds" << endl;
-    
     int t;
     cin >> t;
     for (int i = 0; i < t; ++i) {
@@ -469,5 +475,44 @@ int main() {
         cin >> u >> v;
         cout << g.query(u-1, v-1) << "\n";
     }
+
+    return 0;
+}
+
+
+
+int main() {
+    std::ios::sync_with_stdio(false);
+     
+    ifstream test("City_Maps/Rome.txt");
+    auto t1 = high_resolution_clock::now();
+    
+    int u,v,c,n,m;
+    test >> n >> m;
+    Graph g(n);
+    for (int i = 0; i < m; ++i) {
+        test >> u >> v >> c;
+        g.add_edge(u-1, v-1, c);
+    }
+
+    g.printGraphStatistics();
+    g.preprocess();
+
+    auto t2 = high_resolution_clock::now();
+    
+    cout << "Ready" << endl;
+
+    cout << "Preprocess Time: " << (duration_cast<duration<double>>(t2 - t1)).count() << " seconds" << endl;
+    g.printGraphStatistics();
+    
+    int t;
+    test >> t;
+    for (int i = 0; i < t; ++i) {
+        int u, v;
+        test >> u >> v;
+        cout << g.query(u-1, v-1) << "\n";
+    }
+
+    return 0;
 }
 
