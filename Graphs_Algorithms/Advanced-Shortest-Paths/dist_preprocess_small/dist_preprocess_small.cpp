@@ -9,6 +9,7 @@
 #include <cassert>
 #include <unordered_map>
 #include <fstream>
+#include <chrono>
 
 using namespace std;
 
@@ -93,11 +94,11 @@ struct VertexMap {
     bool contracted{};
     int shortC{};
     int level{};
-    int edgeRank{};
+    int rank{};
     intL importance{};
 
-    bool operator <(const VertexMap& v) {
-        return importance < v.importance;
+    bool operator >(const VertexMap& v) {
+        return importance > v.importance;
     }
 };
 
@@ -144,7 +145,9 @@ public:
 /*# Initializer Functions                  #*/
 /*##########################################*/
 
-    void add_edge_to_list(vector<Edge>& elist, int v, int c) {
+    void add_edge_to_list(vector<Edge>& elist, int v, int c, int u) {
+       
+/* FIXME: Removing the following loop exceeds the time limit for preprocessing. That means there are a lot of duplicated edges which gets added */
         for (int i = 0; i < elist.size(); ++i) {
             Edge& p = elist[i];
             if (p.vertex == v) {
@@ -153,13 +156,17 @@ public:
                 }
                 return;
             }
+
+          //  if (vertices[u].rank > vertices[p.vertex].rank) {
+          //      elist.erase(elist.begin() + i);
+          //  }
         }
         elist.push_back(Edge(v, c));
     }
     
     void add_directed_edge(int u, int v, int c) {
-        add_edge_to_list(outgoing_edges[u], v, c);
-        add_edge_to_list(incoming_edges[v], u, c);
+        add_edge_to_list(outgoing_edges[u], v, c, u);
+        add_edge_to_list(incoming_edges[v], u, c, v);
     }
     
     void add_edge(int u, int v, int c) {
@@ -179,18 +186,7 @@ public:
         cntRank = 0;
     }
 
-    bool read_stdin() {
-        int u,v,c,n,m;
-        cin >> n >> m;
-        set_n(n);
-        for (int i = 0; i < m; ++i) {
-            cin >> u >> v >> c;
-            add_edge(u-1, v-1, c);
-        }
-        return true;
-    }
-    
-    Graph() { read_stdin(); }
+    Graph(int n) { set_n(n); }
 
 /*##########################################*/
 /*# Pre-Process the Graph                   #*/
@@ -202,8 +198,10 @@ public:
             vertices[i].contracted = false;
             vertices[i].shortC = incoming_edges[i].size() + outgoing_edges[i].size();
             vertices[i].level = 0;
-            vertices[i].edgeRank = 0;
-            vertices[i].importance = (incoming_edges[i].size() * outgoing_edges[i].size() - incoming_edges[i].size() - outgoing_edges[i].size()) + 4 * vertices[i].shortC ;
+            vertices[i].rank = 0;
+            //vertices[i].importance = (incoming_edges[i].size() * outgoing_edges[i].size() - incoming_edges[i].size() - outgoing_edges[i].size()) + 1 * vertices[i].shortC ;
+            /* FIXME: Following line of heuristics is better than the above line */
+            vertices[i].importance = incoming_edges[i].size() * outgoing_edges[i].size() ;
             impQ.push(i, vertices[i].importance);
         }
     }
@@ -213,17 +211,18 @@ public:
         distF[s] = 0;
         StlHeap minPQ;
         minPQ.push(s, 0);
-        int hops = -1;
+        int hops = 5;
     
-        while (!minPQ.empty()) {
+        while (hops && !minPQ.empty()) {
             auto current = minPQ.pop().vertex;
-            hops += 1;
-            if (hops > 0 || distF[current] >= maxD) return;
+            hops -= 1;
+            /* FIXME: I need hops to be atleast 5 to pass testcase 6 */
+            if (distF[current] > maxD) return;
     
             for (int i = 0; i < outgoing_edges[current].size(); ++i) {
                 int next = outgoing_edges[current][i].vertex;
                 intL edge_cost = outgoing_edges[current][i].cost;
-                if (vertices[next].contracted) continue;
+                if (vertices[next].rank < vertices[current].rank || next == current || vertices[next].contracted) continue;
     
                 intL next_cost = distF[current] + edge_cost;
                 if (distF[next] == INF || next_cost < distF[next]) {
@@ -244,7 +243,9 @@ public:
         for (int i = 0; i < outgoing_edges[v].size(); ++i) {
             int next = outgoing_edges[v][i].vertex;
             int outDist = outgoing_edges[v][i].cost;
-            if (distF[next] == INF || (inDist + outDist) < distF[next]) {
+
+            /* NOTE::: ADDING !vertices[next]... really matters for preprocessing time. This was causing the preprocessing to exceed time limit*/
+            if (!vertices[next].contracted && (vertices[next].rank  >= vertices[s].rank) && (distF[next] == INF || (inDist + outDist) < distF[next])) {
                 //shortcuts.emplace_back( Shortcut( s, next, inDist + outDist) );
                 add_edge ( s, next, inDist + outDist);
             }
@@ -269,7 +270,7 @@ public:
     
         while(!impQ.empty()) {
             int current = impQ.pop().vertex;
-            vertices[current].edgeRank = cntRank++;
+            vertices[current].rank = cntRank++;
             if (vertices[current].contracted) continue;
             vertices[current].contracted = true;
     
@@ -329,7 +330,7 @@ public:
     }
     
     bool checkRelaxCond (int current, int next, const vector<Distance>& cost_so_far, intL new_cost) {
-        bool nodeRank = vertices[next].edgeRank > vertices[current].edgeRank;
+        bool nodeRank = vertices[next].rank > vertices[current].rank;
         bool cost = (cost_so_far[next] == INF) || (new_cost < cost_so_far[next]);
         //cout << "nodeRank: " << nodeRank << " cost: " << cost << endl;
         return nodeRank && cost;
@@ -443,10 +444,24 @@ public:
 
 int main() {
     std::ios::sync_with_stdio(false);
-    Graph g;
+    int u,v,c,n,m;
+    cin >> n >> m;
+    Graph g(n);
+    for (int i = 0; i < m; ++i) {
+        cin >> u >> v >> c;
+        g.add_edge(u-1, v-1, c);
+    }
+
+    // high_resolution_clock::time_point t1 = high_resolution_clock::now();
+
     g.preprocess();
+
+    // high_resolution_clock::time_point t2 = high_resolution_clock::now();
+    
     cout << "Ready" << endl;
 
+    //cout << "Preprocess Time: " << (duration_cast<duration<double>>(t2 - t1)).count() << " seconds" << endl;
+    
     int t;
     cin >> t;
     for (int i = 0; i < t; ++i) {
