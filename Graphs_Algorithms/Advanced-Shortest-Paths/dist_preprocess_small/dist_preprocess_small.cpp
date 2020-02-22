@@ -175,10 +175,11 @@ public:
         add_directed_edge(u, v, c);
     }
 
-    void add_edge2(int u, int v, int c) {
+    void add_edge2(int u, int v, int c, int k) {
         outgoing_edges[u].push_back(Edge(v, c));
         incoming_edges[v].push_back(Edge(u, c));
-        cout << "add_edge2 " << u << " " << v << " " << c << endl;
+        cout << "Vert: " << u << " " << v << " " << k << " " << c << endl;
+        cout << "Rank: " << vertices[u].rank << " " << vertices[v].rank <<  " " << vertices[k].rank << endl;
     }
 
     void set_n(int n) {
@@ -261,7 +262,7 @@ public:
             /* NOTE::: ADDING !vertices[next]... really matters for preprocessing time. This was causing the preprocessing to exceed time limit*/
             if (inDist + outDist < distF[next]) {
                 //shortcuts.emplace_back( Shortcut( s, next, inDist + outDist) );
-                add_edge2 ( s, next, inDist + outDist);
+                add_edge2 ( s, next, inDist + outDist, v);
             }
         }
     
@@ -270,7 +271,7 @@ public:
     
     void do_shortcut(vector<Shortcut>& shortcuts) {
         for (int i = 0; i < shortcuts.size(); ++i) {
-            add_edge2( shortcuts[i].from, shortcuts[i].to, shortcuts[i].cost);
+            add_edge( shortcuts[i].from, shortcuts[i].to, shortcuts[i].cost);
         }
     }
  
