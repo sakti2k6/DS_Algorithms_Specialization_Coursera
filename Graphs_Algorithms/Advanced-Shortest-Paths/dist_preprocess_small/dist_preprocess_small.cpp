@@ -149,19 +149,19 @@ public:
     void add_edge_to_list(vector<Edge>& elist, int v, int c, int u) {
        
 /* FIXME: Removing the following loop exceeds the time limit for preprocessing. That means there are a lot of duplicated edges which gets added */
-//        for (int i = 0; i < elist.size(); ++i) {
-//            Edge& p = elist[i];
-//            if (p.vertex == v) {
-//                if (p.cost > c) {
-//                    p.cost = c;
-//                }
-//                return;
-//            }
-//
-//          //  if (vertices[u].rank > vertices[p.vertex].rank) {
-//          //      elist.erase(elist.begin() + i);
-//          //  }
-//        }
+        for (int i = 0; i < elist.size(); ++i) {
+            Edge& p = elist[i];
+            if (p.vertex == v) {
+                if (p.cost > c) {
+                    p.cost = c;
+                }
+                return;
+            }
+
+         //   if (vertices[u].rank > vertices[p.vertex].rank) {
+         //       elist.erase(elist.begin() + i--);
+         //   }
+        }
         elist.push_back(Edge(v, c));
         cout << u << " " << v << " " << c << endl;
     }
@@ -173,6 +173,12 @@ public:
     
     void add_edge(int u, int v, int c) {
         add_directed_edge(u, v, c);
+    }
+
+    void add_edge2(int u, int v, int c) {
+        outgoing_edges[u].push_back(Edge(v, c));
+        incoming_edges[v].push_back(Edge(u, c));
+        cout << "add_edge2 " << u << " " << v << " " << c << endl;
     }
 
     void set_n(int n) {
@@ -227,10 +233,11 @@ public:
                 int next = outgoing_edges[current][i].vertex;
                 if (visitedF[next]) continue;
                 intL edge_cost = outgoing_edges[current][i].cost;
-                if (vertices[next].rank < vertices[current].rank || next == current || vertices[next].contracted ) continue;
+                //if (vertices[next].rank < vertices[current].rank || next == current || vertices[next].contracted ) continue;
+                if (vertices[next].contracted ) continue;
     
                 intL next_cost = distF[current] + edge_cost;
-                if (distF[next] == INF || next_cost < distF[next]) {
+                if (next_cost < distF[next] && next_cost <= maxD) {
                     distF[next] = next_cost;
                     minPQ.push(next, next_cost);
                 }
@@ -248,12 +255,13 @@ public:
         dijkstra (s, maxD);
         for (int i = 0; i < outgoing_edges[v].size(); ++i) {
             int next = outgoing_edges[v][i].vertex;
+            if (vertices[next].contracted && next == v && next == s) continue;
             int outDist = outgoing_edges[v][i].cost;
 
             /* NOTE::: ADDING !vertices[next]... really matters for preprocessing time. This was causing the preprocessing to exceed time limit*/
-            if (!vertices[next].contracted && (vertices[next].rank  >= vertices[s].rank) && (distF[next] == INF || (inDist + outDist) < distF[next])) {
+            if (inDist + outDist < distF[next]) {
                 //shortcuts.emplace_back( Shortcut( s, next, inDist + outDist) );
-                add_edge ( s, next, inDist + outDist);
+                add_edge2 ( s, next, inDist + outDist);
             }
         }
     
@@ -262,7 +270,7 @@ public:
     
     void do_shortcut(vector<Shortcut>& shortcuts) {
         for (int i = 0; i < shortcuts.size(); ++i) {
-            add_edge( shortcuts[i].from, shortcuts[i].to, shortcuts[i].cost);
+            add_edge2( shortcuts[i].from, shortcuts[i].to, shortcuts[i].cost);
         }
     }
  
@@ -282,11 +290,14 @@ public:
     
             //Find maximum incoming edge
             int inMax = 0;
+            int inMaxV = -1;
             for (int i = 0; i < incoming_edges[current].size(); ++i) {
                 int v = incoming_edges[current][i].vertex;
-                //if (vertices[v].contracted) continue;
-                if (incoming_edges[current][i].cost > inMax) 
+                if (vertices[v].contracted) continue;
+                if (incoming_edges[current][i].cost > inMax) {
                     inMax = incoming_edges[current][i].cost;
+                    inMaxV = v;
+                }
             }
     
             //Find maximum outgoing edge
@@ -294,7 +305,7 @@ public:
             for (int i = 0; i < outgoing_edges[current].size(); ++i) {
                 int v = outgoing_edges[current][i].vertex;
                 if (vertices[v].contracted) continue;
-                if (outgoing_edges[current][i].cost > outMax) 
+                if (outgoing_edges[current][i].cost > outMax && v != inMaxV) 
                     outMax = outgoing_edges[current][i].cost;
             }
     
@@ -304,7 +315,7 @@ public:
             //Contract each of the incoming edges of current vertex;
             for (int i = 0; i < incoming_edges[current].size(); ++i) {
                 int next = incoming_edges[current][i].vertex;
-                if (vertices[next].contracted || current == next) continue;
+                if (vertices[next].contracted) continue;
                 int nextDist = incoming_edges[current][i].cost;
                 simulateContraction(next, nextDist, current, inMax + outMax);
                 //vector<Shortcut> shortcuts = simulateContraction(next, nextDist, current, inMax + outMax);
@@ -490,6 +501,7 @@ int main() {
     std::ios::sync_with_stdio(false);
      
     ifstream test("City_Maps/Rome.txt");
+    //ifstream test("mytest.txt");
     auto t1 = high_resolution_clock::now();
     
     int u,v,c,n,m;
@@ -521,3 +533,12 @@ int main() {
     return 0;
 }
 
+
+/* Learnings */
+/* 1. Use visited bool array for Dijkstra, As we can have undirected edges or multiple edges to same node. It will avoid loop conditions.
+ * 2. In 1-Dijkstra's, if any outgoing node's new distance is more than maxD, then don't explore it.
+ * 3. While calculating maxD, ignore the same edge for both incoming/outgoing. This happens in case of undirected graphs. If we have an arc with huge distance, then both incoming and outgoing max becomes that. 
+ *    So, we should be considering different edges for calculating maxD.
+ * 4. 
+ *
+ */
