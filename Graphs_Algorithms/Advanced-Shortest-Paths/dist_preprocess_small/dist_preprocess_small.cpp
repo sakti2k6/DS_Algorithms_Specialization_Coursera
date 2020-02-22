@@ -179,7 +179,8 @@ public:
         outgoing_edges[u].push_back(Edge(v, c));
         incoming_edges[v].push_back(Edge(u, c));
         cout << "Vert: " << u << " " << v << " " << k << " " << c << endl;
-        cout << "Rank: " << vertices[u].rank << " " << vertices[v].rank <<  " " << vertices[k].rank << endl;
+      //  cout << "Rank: " << vertices[u].rank << " " << vertices[v].rank <<  " " << vertices[k].rank << endl;
+      //  cout << "Cntr: " << vertices[u].contracted << " " << vertices[v].contracted <<  " " << vertices[k].contracted << endl;
     }
 
     void set_n(int n) {
@@ -256,7 +257,7 @@ public:
         dijkstra (s, maxD);
         for (int i = 0; i < outgoing_edges[v].size(); ++i) {
             int next = outgoing_edges[v][i].vertex;
-            if (vertices[next].contracted && next == v && next == s) continue;
+            if (vertices[next].contracted || next == v || next == s) continue;
             int outDist = outgoing_edges[v][i].cost;
 
             /* NOTE::: ADDING !vertices[next]... really matters for preprocessing time. This was causing the preprocessing to exceed time limit*/
