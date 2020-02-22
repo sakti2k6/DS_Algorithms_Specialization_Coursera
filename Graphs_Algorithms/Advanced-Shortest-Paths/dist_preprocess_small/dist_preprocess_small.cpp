@@ -149,20 +149,21 @@ public:
     void add_edge_to_list(vector<Edge>& elist, int v, int c, int u) {
        
 /* FIXME: Removing the following loop exceeds the time limit for preprocessing. That means there are a lot of duplicated edges which gets added */
-      //  for (int i = 0; i < elist.size(); ++i) {
-      //      Edge& p = elist[i];
-      //      if (p.vertex == v) {
-      //          if (p.cost > c) {
-      //              p.cost = c;
-      //          }
-      //          return;
-      //      }
-
-      //    //  if (vertices[u].rank > vertices[p.vertex].rank) {
-      //    //      elist.erase(elist.begin() + i);
-      //    //  }
-      //  }
+//        for (int i = 0; i < elist.size(); ++i) {
+//            Edge& p = elist[i];
+//            if (p.vertex == v) {
+//                if (p.cost > c) {
+//                    p.cost = c;
+//                }
+//                return;
+//            }
+//
+//          //  if (vertices[u].rank > vertices[p.vertex].rank) {
+//          //      elist.erase(elist.begin() + i);
+//          //  }
+//        }
         elist.push_back(Edge(v, c));
+        cout << u << " " << v << " " << c << endl;
     }
     
     void add_directed_edge(int u, int v, int c) {
@@ -216,14 +217,17 @@ public:
     
         while (hops && !minPQ.empty()) {
             auto current = minPQ.pop().vertex;
+            if (visitedF[current]) continue;
+            visitedF[current] = true;
             hops -= 1;
             /* FIXME: I need hops to be atleast 5 to pass testcase 6 */
             if (distF[current] > maxD) return;
     
             for (int i = 0; i < outgoing_edges[current].size(); ++i) {
                 int next = outgoing_edges[current][i].vertex;
+                if (visitedF[next]) continue;
                 intL edge_cost = outgoing_edges[current][i].cost;
-                if (vertices[next].rank < vertices[current].rank || next == current || vertices[next].contracted) continue;
+                if (vertices[next].rank < vertices[current].rank || next == current || vertices[next].contracted ) continue;
     
                 intL next_cost = distF[current] + edge_cost;
                 if (distF[next] == INF || next_cost < distF[next]) {
@@ -238,6 +242,7 @@ public:
       //  vector<Shortcut> shortcuts;
         for (int i = 0; i < N; ++i) {
             if (distF[i] != INF) distF[i] = INF;
+            visitedF[i] = false;
         }
         //distMap distM = dijkstra (s, maxD);
         dijkstra (s, maxD);
@@ -299,7 +304,7 @@ public:
             //Contract each of the incoming edges of current vertex;
             for (int i = 0; i < incoming_edges[current].size(); ++i) {
                 int next = incoming_edges[current][i].vertex;
-                if (vertices[next].contracted) continue;
+                if (vertices[next].contracted || current == next) continue;
                 int nextDist = incoming_edges[current][i].cost;
                 simulateContraction(next, nextDist, current, inMax + outMax);
                 //vector<Shortcut> shortcuts = simulateContraction(next, nextDist, current, inMax + outMax);
