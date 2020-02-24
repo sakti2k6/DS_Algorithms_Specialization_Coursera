@@ -430,11 +430,13 @@ public:
         minpqR.clear();
     }
 
+    //FIXME: The query in bidirectional Dijkstras, automatically works in higher node rank direction.
     bool checkRelaxCond (int current, int next, const vector<Distance>& cost_so_far, intL new_cost) {
         bool nodeRank = vertices[next].rank > vertices[current].rank;
-        bool cost = (cost_so_far[next] == INF) || (new_cost < cost_so_far[next]);
+        bool cost = new_cost < cost_so_far[next];
         //cout << "nodeRank: " << nodeRank << " cost: " << cost << endl;
-        return nodeRank && cost;
+        //return nodeRank && cost;
+        return cost;
     }
     
     void relaxEdge(int v, string direction) {
